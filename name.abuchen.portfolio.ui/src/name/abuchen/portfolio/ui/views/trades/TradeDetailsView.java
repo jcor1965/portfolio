@@ -459,9 +459,14 @@ public final class TradeDetailsView extends AbstractFinanceView
         updateClientFilterEnablement();
 
         toolBarManager.add(new DropDown(Messages.MenuExportData, Images.EXPORT, SWT.NONE,
-                        manager -> manager.add(new SimpleAction(Messages.LabelTrades + " (CSV)", //$NON-NLS-1$
+                        manager -> {
+                            manager.add(new SimpleAction(Messages.LabelTrades + " (CSV)", //$NON-NLS-1$
                                         a -> new TableViewerCSVExporter(table.getTableViewer())
-                                                        .export(Messages.LabelTrades + ".csv"))) //$NON-NLS-1$
+                                                        .export(Messages.LabelTrades + ".csv"))); //$NON-NLS-1$
+                            manager.add(new SimpleAction("Exportar relatório FIFO (Excel)", //$NON-NLS-1$
+                                            a -> new FifoExportDialog(table.getTableViewer().getControl().getShell(),
+                                                            getClient()).open()));
+                        }
         ));
 
         toolBarManager.add(new DropDown(Messages.MenuShowHideColumns, Images.CONFIG, SWT.NONE, manager -> {
