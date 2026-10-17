@@ -7,7 +7,7 @@ Este fork mantém as adaptações pessoais separadas do histórico oficial. A ap
 | Referência         | Finalidade                                             |
 |--------------------|--------------------------------------------------------|
 | `origin`           | Fork pessoal no GitHub                                 |
-| `upstream`         | Repositório oficial; usado para obter atualizações      |
+| `upstream`         | Repositório oficial; usado para obter atualizações     |
 | `master`           | Referência do desenvolvimento oficial                  |
 | `personal/main`    | Base estável e adaptações pessoais                     |
 | `personal/base/*`  | Tags locais que identificam as versões oficiais usadas |
@@ -25,19 +25,44 @@ Usar Java 21 e Maven. Nesta máquina, Java e Maven portátil estão disponíveis
 # Compilar e executar os testes do núcleo
 & .\personal\Build.ps1 -Mode CoreTests
 
+# Compilar todos os módulos sem repetir os testes
+& .\personal\Build.ps1 -Mode Compile
+
 # Executar a compilação completa, testes e empacotamento oficiais
 & .\personal\Build.ps1 -Mode Full
 ```
 
-`Build.ps1` aceita `-JavaHome`, `-MavenHome` e `-LocalRepository`. O perfil `local-dev` só é usado no modo CoreTests; omite cobertura, Checkstyle, geração protobuf e traduções conforme a configuração oficial. O modo Full usa o perfil normal. A primeira execução necessita de rede para obter as dependências.
+`Build.ps1` aceita `-JavaHome`, `-MavenHome` e `-LocalRepository`. O perfil `local-dev` é usado nos modos CoreTests e Compile; omite cobertura, Checkstyle, geração protobuf e traduções conforme a configuração oficial. Compile não executa testes e deve ser usado depois de validar as alterações. O modo Full usa o perfil normal. A primeira execução necessita de rede para obter as dependências.
 
 No Windows, o script usa os certificados de confiança do sistema para as ligações HTTPS do Java. Não desativa a verificação de certificados. As variáveis de ambiente são restauradas ao terminar.
 
-## Adaptações planeadas
+## Adaptações pessoais
 
-Primeira funcionalidade: exportação FIFO anual, com resumo por venda, detalhe por aquisição e atributos fiscais dos títulos. A integração ainda não está implementada neste fork.
+### Exportação FIFO
 
-O gerador externo existente serve de referência funcional local. Ao integrá-lo, usar dados sintéticos nos testes e confirmar quantidades, rateio monetário, vendas parciais, anos anteriores e correspondência com o cálculo do PP. Nenhum relatório ou carteira real deve ser publicado como fixture de teste.
+Em Relatórios > Performance > Negociações, o menu de exportação inclui **Exportar relatório FIFO (Excel)**. O diálogo permite escolher a conta de títulos e o ano das vendas. Usa todo o histórico anterior da conta, independentemente dos filtros da tabela, e não altera a carteira.
+
+O Excel contém resumo por venda, parcelas por aquisição e validação interna. Inclui datas, quantidades, valores em EUR, ISIN, IDs/UUID e ficheiros de origem. Os atributos **País da fonte — Nome** e **País da fonte — AT** são lidos pelo nome do atributo, sem depender dos UUID locais.
+
+Esta primeira versão suporta compras/vendas em EUR sem unidades de encargos. Rejeita câmbio, entregas, transferências, vendas sem histórico e IDs Trading 212 repetidos. A conta escolhida deve corresponder a todo o histórico da instituição. Ainda não consolida várias contas da mesma instituição. Não calcula impostos nem determina códigos fiscais.
+
+O rateio usa quantidades inteiras e aritmética inteira de precisão arbitrária, arredondando cumulativamente a cêntimos. Preserva o custo de cada lote consumido e a receita de cada venda. Empates de data/hora respeitam a ordem na carteira. O gerador externo continua a ser uma referência local para a reconciliação.
+
+### Importação Trading 212
+
+O menu Ficheiro > Importar inclui **Trading 212 (CSV)**. O extrator do complemento foi transportado para o núcleo e ligado ao assistente padrão do PP. Mantém os limites funcionais do complemento, incluindo a deduplicação apenas dentro do mesmo lote e a rejeição de câmbio/encargos adicionais não nulos.
+
+### Testes e pacote de teste
+
+Os testes públicos usam dados sintéticos. A reconciliação opcional com dados reais só corre quando existem `PP_FIFO_PRIVATE_XML` e `PP_FIFO_PRIVATE_CSV` no ambiente local. `PP_FIFO_PRIVATE_OUTPUT` permite guardar o Excel dessa verificação. Estes dados não são necessários para compilar nem são incluídos no Git.
+
+`Package-Test.ps1` cria uma distribuição isolada numa pasta nova, a partir de um ZIP oficial 0.89.0 cujo SHA-256 é fornecido e verificado. Substitui apenas os módulos core, UI e bootstrap pelos JAR compilados, acrescenta o Java local e um lançador com workspace/preferências separados. As atualizações automáticas ficam desativadas para não substituir as adaptações pelo programa oficial. Não substitui a instalação habitual e não inclui carteiras reais.
+
+```powershell
+& .\personal\Package-Test.ps1 -OfficialZip <zip-oficial> -OfficialSha256 <sha256-do-release>
+```
+
+Abrir a distribuição por `Abrir-PP-Pessoal.cmd` e testar numa cópia da carteira: o isolamento das preferências não impede a gravação de um ficheiro aberto. O pacote é experimental e os módulos adaptados não têm a assinatura da distribuição oficial.
 
 Concentrar o código novo em classes/pacotes próprios. Alterar os componentes existentes apenas onde necessário para ligar os comandos, dados e exportação. Manter cada adaptação em commits pequenos e identificáveis.
 

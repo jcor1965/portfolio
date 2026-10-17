@@ -27,3 +27,7 @@ jobs:
           -Plocal-dev
           -pl :portfolio-target-definition,:name.abuchen.portfolio.pdfbox1,:name.abuchen.portfolio.pdfbox3,:name.abuchen.portfolio,:name.abuchen.portfolio.junit,:name.abuchen.portfolio.tests
           -am verify
+      - name: Compile application and personal UI integration
+        run: >-
+          mvn --batch-mode --no-transfer-progress
+          -f portfolio-app/pom.xml -Plocal-dev -DskipTests package

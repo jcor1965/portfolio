@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('Validate', 'CoreTests', 'Full')][string]$Mode = 'CoreTests',
+    [ValidateSet('Validate', 'CoreTests', 'Compile', 'Full')][string]$Mode = 'CoreTests',
     [string]$JavaHome,
     [string]$MavenHome,
     [string]$LocalRepository
@@ -22,6 +22,8 @@ try {
     $taskArguments = @('--batch-mode', '--no-transfer-progress', '-f', (Join-Path $taskRepo 'portfolio-app\pom.xml'), "-Dmaven.repo.local=$LocalRepository")
     if ($Mode -eq 'CoreTests') {
         $taskArguments += @('-Plocal-dev', '-pl', ':portfolio-target-definition,:name.abuchen.portfolio.pdfbox1,:name.abuchen.portfolio.pdfbox3,:name.abuchen.portfolio,:name.abuchen.portfolio.junit,:name.abuchen.portfolio.tests', '-am', 'verify')
+    } elseif ($Mode -eq 'Compile') {
+        $taskArguments += @('-Plocal-dev', '-DskipTests', 'package')
     } elseif ($Mode -eq 'Validate') {
         $taskArguments += @('validate')
     } else {
