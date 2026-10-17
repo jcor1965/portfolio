@@ -5,6 +5,7 @@ Bundle-SymbolicName: name.abuchen.portfolio
 Bundle-Version: 0.89.0
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: name.abuchen.portfolio,
+ name.abuchen.portfolio.datatransfer.trading212,
  name.abuchen.portfolio.checks,
  name.abuchen.portfolio.datatransfer,
  name.abuchen.portfolio.datatransfer.actions,
