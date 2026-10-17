@@ -15,3 +15,4 @@ workspace
 # Personal local data and generated reports
 personal/private/
 personal/output/
+.tycho-consumer-pom.xml
